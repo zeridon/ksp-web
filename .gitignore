@@ -52,3 +52,8 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
+# virtualenv
+.venv
+
+# dev db
+*.db
