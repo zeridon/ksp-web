@@ -117,9 +117,6 @@ def search_key():
 
 	#sample http://keys.example.com:11371/pks/lookup?op=get&search=0x99242560
 
-	return'morkov'
-	pass
-
 @app.route('/pks/add', methods=['POST'])
 def add_key():
 	"""
