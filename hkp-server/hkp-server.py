@@ -7,7 +7,7 @@
 # Changelog: 2014.11.05 - Initial version
 
 from flask import Flask, request, render_template
-import os
+import os, sys
 
 app = Flask(__name__)
 
@@ -25,11 +25,19 @@ if not os.path.exists(KEY_STORE):
 	print '%s does not exist. Creating...' % KEY_STORE
 	os.makedirs(KEY_STORE, 0700)
 
-def get_file_path(keyid=u''):
+def get_file_path(keyid=''):
 	"""
 	return the full path to a file containing the key
 	"""
-	return os.path.join(KEY_STORE, str(keyid[0:4]), str(keyid[4:8]), keyid).lower()
+	keyid = keyid.lower()
+	return str(os.path.join(KEY_STORE, keyid[0:4], keyid[4:8], keyid))
+
+def return_error(code = 501, text = 'Not supported'):
+	return render_template(
+			'50x.html',
+			error_num = code,
+			error_txt = text,
+			), code
 
 @app.route('/pks/lookup', methods=['GET'])
 def search_key():
@@ -43,16 +51,8 @@ def search_key():
 	# x-<...> - custom
 	if operation == 'get':
 		pass
-	elif operation == 'index' or operation == 'vindex':
-		return render_template(
-				'50x.html',
-				error_num = 501,
-				error_txt = 'Operation not supported. Only get and x-get-bundle supported.',
-				), 501
-	elif operation == 'x-get-bundle':
-		pass
 	else:
-		pass
+		return return_error(501, 'Operation not supported. Only get and x-get-bundle supported.')
 
 	search = request.args.get('search')
 	# valid keyid's (spacing added for readability)
@@ -66,11 +66,7 @@ def search_key():
 			try:
 				int(search, 16)
 			except:
-				return render_template(
-						'50x.html',
-						error_num = 404,
-						error_txt = 'ID/Fingerprint incomplete',
-						), 404
+				return return_error(404, 'ID/Fingerprint incomplete')
 			
 			# now get the key and dump it
 			if len(search) == 40:
@@ -84,17 +80,9 @@ def search_key():
 			return fp.read(), 200, {'Content-Type': 'application/pgp-keys'}
 			#return keyfile
 		else:
-			return render_template(
-					'50x.html',
-					error_num = 404,
-					error_txt = 'ID/Fingerprint incomplete',
-					), 404
+			return return_error(404, 'ID/Fingerprint incomplete')
 	else:
-		return render_template(
-				'50x.html',
-				error_num = 501,
-				error_txt = 'Search type not suported. Only ID or V4 fingerprint supported',
-				), 501
+		return return_error(501, 'Search type not suported. Only ID or V4 fingerprint supported')
 
 	options = request.args.get('options')
 	# valid options (comma separated list
@@ -117,6 +105,9 @@ def search_key():
 
 	#sample http://keys.example.com:11371/pks/lookup?op=get&search=0x99242560
 
+	# now we have the op and search .. let's boogie
+
+
 @app.route('/pks/add', methods=['POST'])
 def add_key():
 	"""
@@ -131,36 +122,36 @@ def add_key():
 	_gpghome = mkdtemp(prefix = os.path.join(GPG_HOME, 'ksp'))
 
 	# Init the GPG
-	gpg = gnupg.GPG(gnupghome = _gpghome)
+	gpg = gnupg.GPG(gnupghome = _gpghome, options = ['--with-colons', '--keyid-format=LONG'], verbose = False)
 
 	# Blindly try to import and check result. If we have count we are fine
 	import_result = gpg.import_keys(request.form['keytext'])
 	if import_result.count <= 0:
-		return render_template(
-				'50x.html',
-				error_num = 501,
-				error_txt = 'Invalid key sent'
-				), 501
+		return return_error(501, 'Invalid key sent')
 	
 	# Now list the keys in the keyring and store it on the FS
 	imported_keys = gpg.list_keys()
 	for key in imported_keys:
 		# Create a keypath (and dirs if needed)
 		_path = get_file_path(key['keyid'])
-		import subprocess
-		subprocess.Popen("ls %s"%os.path.dirname(_path), shell=True)
-		if not os.path.exists(_path):
-			print _path
+		if not os.path.exists(os.path.dirname(_path)):
 			os.makedirs(os.path.dirname(_path), 0700)
 
-		# Store the file in path/12/1234567812345678
-		fp = open(_path, 'w')
-		fp.write(gpg.export_keys(key['keyid']))
-		fp.close()
+		if not os.path.exists(os.path.dirname(get_file_path(key['keyid'][-8:]))):
+			os.makedirs(os.path.dirname(get_file_path(key['keyid'][-8:])), 0700)
+
+		# Store the file in path/1234/5678/1234567812345678
+		if not os.path.exists(o_path):
+			fp = open(_path, 'w')
+			fp.write(gpg.export_keys(key['keyid']))
+			fp.close()
+
+			# and symlink it to the short ID
+			if not os.path.exists(get_file_path(key['keyid'][-8:])):
+				os.symlink(_path, get_file_path(key['keyid'][-8:]))
 	
 	# Nuke the temp gpg home
 	rmtree(_gpghome)
-
 	return '101'
 
 @app.route('/', methods=['GET'])
