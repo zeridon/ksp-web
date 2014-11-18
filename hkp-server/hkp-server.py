@@ -4,10 +4,11 @@
 # Author   : Vladimir vitkov <vvitkov@linux-bg.org>
 # License  : Apache 2.0
 # Version  : 1.0
-# Changelog: 2014.11.05 - Initial version
+# Changelog: 2014.11.18 - first stable release
+#	2014.11.05 - Initial version
 
 from flask import Flask, request, render_template
-import os, sys
+import os
 
 app = Flask(__name__)
 
