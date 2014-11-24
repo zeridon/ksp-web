@@ -123,7 +123,7 @@ def add_key():
 	_gpghome = mkdtemp(prefix = os.path.join(GPG_HOME, 'ksp'))
 
 	# Init the GPG
-	gpg = gnupg.GPG(gnupghome = _gpghome, options = ['--with-colons', '--keyid-format=LONG'], verbose = False)
+	gpg = gnupg.GPG(gnupghome = _gpghome, options = ['--with-colons', '--keyid-format=LONG', '--export-options=export-minimal,export-clean,no-export-attributes'], verbose = False)
 
 	# Blindly try to import and check result. If we have count we are fine
 	import_result = gpg.import_keys(request.form['keytext'])
