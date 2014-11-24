@@ -38,12 +38,12 @@ How to use
 ----------
 
  * Point your gpg client to it
- ```
+```
  gpg --keyserver ... --send-keys
  gpg --keyserver ... --recv-keys
- ```
+```
  * Get all participating keys
- ```
+```
  curl http://...:5000/pks/lookup?op=x-get-bundle -o keysigning-party-bindle.asc
- ```
+```
  and import it in a fresh keyring (not to polute yours).
