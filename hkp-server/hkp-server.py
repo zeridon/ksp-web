@@ -142,7 +142,7 @@ def add_key():
 			os.makedirs(os.path.dirname(get_file_path(key['keyid'][-8:])), 0700)
 
 		# Store the file in path/1234/5678/1234567812345678
-		if not os.path.exists(o_path):
+		if not os.path.exists(_path):
 			fp = open(_path, 'w')
 			fp.write(gpg.export_keys(key['keyid']))
 			fp.close()
