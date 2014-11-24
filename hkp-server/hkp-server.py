@@ -52,6 +52,30 @@ def search_key():
 	# x-<...> - custom
 	if operation == 'get':
 		pass
+	elif operation == 'x-get-bundle':
+		# find all keys, add them to keyring, then armor dump them
+		# first init gpg
+		import gnupg
+		from tempfile import mkdtemp
+		from shutil import rmtree
+
+		_gpghome = mkdtemp(prefix = os.path.join(GPG_HOME, 'bundler'))
+		gpg = gnupg.GPG(gnupghome = _gpghome, options = ['--with-colons', '--keyid-format=LONG', '--import-options=import-minimal,import-clean'], verbose = True)
+		for root, dirs, files in os.walk(KEY_STORE):
+			for fname in files:
+				keydata = open(os.path.join(root, fname), 'r').read()
+				gpg.import_keys(keydata)
+
+		keys = gpg.list_keys()
+		_export = []
+		for key in keys:
+			_export.append(key['keyid'])
+
+		armoured = gpg.export_keys(_export)
+
+		rmtree(_gpghome)
+		return armoured
+
 	else:
 		return return_error(501, 'Operation not supported. Only get and x-get-bundle supported.')
 
