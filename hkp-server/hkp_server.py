@@ -51,7 +51,35 @@ def search_key():
 	# vindex - verbose list or 501
 	# x-<...> - custom
 	if operation == 'get':
-		pass
+		search = request.args.get('search')
+		# valid keyid's (spacing added for readability)
+		# 0x12345678 - 32bit keyid
+		# 0x12345678 12345678 - 64bit
+		# 0x12345678 12345678 12345678 12345678 - v3 fingerprint
+		# 0x12345678 12345678 12345678 12345678 12345678 - v4 fingerprint
+		if search.startswith('0x'):
+			search = search[2:]
+			if len(search) in (8, 16, 40):
+				try:
+					int(search, 16)
+				except:
+					return return_error(404, 'ID/Fingerprint incomplete')
+				
+				# now get the key and dump it
+				if len(search) == 40:
+					# v4 fingerprint - keyid is last 16 digits
+					search = search[-16:]
+	
+				keyfile = get_file_path(search)
+				
+				# now dump it
+				fp = open(keyfile, 'r')
+				return fp.read(), 200, {'Content-Type': 'application/pgp-keys'}
+				#return keyfile
+			else:
+				return return_error(501, 'Search type not suported. Only ID or V4 fingerprint supported')
+		else:
+			return return_error(501, 'Search type not suported. Only ID or V4 fingerprint supported')
 	elif operation == 'x-get-bundle':
 		# find all keys, add them to keyring, then armor dump them
 		# first init gpg
@@ -79,36 +107,6 @@ def search_key():
 
 	else:
 		return return_error(501, 'Operation not supported. Only get and x-get-bundle supported.')
-
-	search = request.args.get('search')
-	# valid keyid's (spacing added for readability)
-	# 0x12345678 - 32bit keyid
-	# 0x12345678 12345678 - 64bit
-	# 0x12345678 12345678 12345678 12345678 - v3 fingerprint
-	# 0x12345678 12345678 12345678 12345678 12345678 - v4 fingerprint
-	if search.startswith('0x'):
-		search = search[2:]
-		if len(search) in (8, 16, 40):
-			try:
-				int(search, 16)
-			except:
-				return return_error(404, 'ID/Fingerprint incomplete')
-			
-			# now get the key and dump it
-			if len(search) == 40:
-				# v4 fingerprint - keyid is last 16 digits
-				search = search[-16:]
-
-			keyfile = get_file_path(search)
-			
-			# now dump it
-			fp = open(keyfile, 'r')
-			return fp.read(), 200, {'Content-Type': 'application/pgp-keys'}
-			#return keyfile
-		else:
-			return return_error(501, 'Search type not suported. Only ID or V4 fingerprint supported')
-	else:
-		return return_error(501, 'Search type not suported. Only ID or V4 fingerprint supported')
 
 	options = request.args.get('options')
 	# valid options (comma separated list
