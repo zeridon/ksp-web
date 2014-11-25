@@ -73,9 +73,11 @@ def search_key():
 				keyfile = get_file_path(search)
 				
 				# now dump it
-				fp = open(keyfile, 'r')
-				return fp.read(), 200, {'Content-Type': 'application/pgp-keys'}
-				#return keyfile
+				if os.path.exists(keyfile):
+					fp = open(keyfile, 'r')
+					return fp.read(), 200, {'Content-Type': 'application/pgp-keys'}
+				else:
+					return return_error(404, 'Key not found on this server')
 			else:
 				return return_error(501, 'Search type not suported. Only ID or V4 fingerprint supported')
 		else:
@@ -100,10 +102,13 @@ def search_key():
 		for key in keys:
 			_export.append(key['keyid'])
 
-		armoured = gpg.export_keys(_export)
+		if len(_export):
+			armoured = gpg.export_keys(_export)
+		else:
+			return return_error(404, 'No keys found on server')
 
 		rmtree(_gpghome)
-		return armoured
+		return armoured, 200, {'Content-Type': 'application/pgp-keys'}
 
 	else:
 		return return_error(501, 'Operation not supported. Only get and x-get-bundle supported.')
@@ -146,7 +151,7 @@ def add_key():
 	_gpghome = mkdtemp(prefix = os.path.join(GPG_HOME, 'ksp'))
 
 	# Init the GPG
-	gpg = gnupg.GPG(gnupghome = _gpghome, options = ['--with-colons', '--keyid-format=LONG', '--export-options=export-minimal,export-clean,no-export-attributes'], verbose = False)
+	gpg = gnupg.GPG(gnupghome = _gpghome, options = ['--with-colons', '--keyid-format=LONG', '--export-options=export-minimal,export-clean,no-export-attributes', '--import-options=import-minimal,import-clean'], verbose = False)
 
 	# Blindly try to import and check result. If we have count we are fine
 	import_result = gpg.import_keys(request.form['keytext'])
