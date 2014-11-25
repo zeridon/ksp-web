@@ -60,7 +60,7 @@ def search_key():
 		from shutil import rmtree
 
 		_gpghome = mkdtemp(prefix = os.path.join(GPG_HOME, 'bundler'))
-		gpg = gnupg.GPG(gnupghome = _gpghome, options = ['--with-colons', '--keyid-format=LONG', '--import-options=import-minimal,import-clean'], verbose = True)
+		gpg = gnupg.GPG(gnupghome = _gpghome, options = ['--with-colons', '--keyid-format=LONG', '--import-options=import-minimal,import-clean'], verbose = False)
 		for root, dirs, files in os.walk(KEY_STORE):
 			for fname in files:
 				keydata = open(os.path.join(root, fname), 'r').read()
@@ -105,7 +105,7 @@ def search_key():
 			return fp.read(), 200, {'Content-Type': 'application/pgp-keys'}
 			#return keyfile
 		else:
-			return return_error(404, 'ID/Fingerprint incomplete')
+			return return_error(501, 'Search type not suported. Only ID or V4 fingerprint supported')
 	else:
 		return return_error(501, 'Search type not suported. Only ID or V4 fingerprint supported')
 
@@ -177,7 +177,7 @@ def add_key():
 	
 	# Nuke the temp gpg home
 	rmtree(_gpghome)
-	return '101'
+	return key['keyid'], 200
 
 @app.route('/', methods=['GET'])
 @app.route('/about', methods=['GET'])
