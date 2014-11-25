@@ -63,8 +63,9 @@ def search_key():
 		gpg = gnupg.GPG(gnupghome = _gpghome, options = ['--with-colons', '--keyid-format=LONG', '--import-options=import-minimal,import-clean'], verbose = False)
 		for root, dirs, files in os.walk(KEY_STORE):
 			for fname in files:
-				keydata = open(os.path.join(root, fname), 'r').read()
-				gpg.import_keys(keydata)
+				if not os.path.islink(os.path.join(root, fname)):
+					keydata = open(os.path.join(root, fname), 'r').read()
+					gpg.import_keys(keydata)
 
 		keys = gpg.list_keys()
 		_export = []
