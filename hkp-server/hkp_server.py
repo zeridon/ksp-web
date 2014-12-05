@@ -42,8 +42,9 @@ def return_error(code = 501, text = 'Not supported'):
 
 @app.route('/pks/lookup', methods=['GET'])
 def search_key():
-	machine_readable = False
-
+	'''
+	Handle searching of keys and creating final bundles
+	'''
 	operation = request.args.get('op')
 	# valid operations
 	# get - send the keys (html wrapping possible) or 404
@@ -90,7 +91,12 @@ def search_key():
 		from shutil import rmtree
 
 		_gpghome = mkdtemp(prefix = os.path.join(GPG_HOME, 'bundler'))
-		gpg = gnupg.GPG(gnupghome = _gpghome, options = ['--with-colons', '--keyid-format=LONG', '--import-options=import-minimal,import-clean'], verbose = False)
+		gpg = gnupg.GPG(gnupghome = _gpghome, options = [
+			'--with-colons',
+			'--keyid-format=LONG',
+			'--export-options=export-minimal,export-clean,no-export-attributes',
+			'--import-options=import-minimal,import-clean'
+			], verbose = False)
 		for root, dirs, files in os.walk(KEY_STORE):
 			for fname in files:
 				if not os.path.islink(os.path.join(root, fname)):
@@ -102,7 +108,7 @@ def search_key():
 		for key in keys:
 			_export.append(key['keyid'])
 
-		if len(_export):
+		if len(_export) > 0:
 			armoured = gpg.export_keys(_export)
 		else:
 			return return_error(404, 'No keys found on server')
@@ -151,7 +157,12 @@ def add_key():
 	_gpghome = mkdtemp(prefix = os.path.join(GPG_HOME, 'ksp'))
 
 	# Init the GPG
-	gpg = gnupg.GPG(gnupghome = _gpghome, options = ['--with-colons', '--keyid-format=LONG', '--export-options=export-minimal,export-clean,no-export-attributes', '--import-options=import-minimal,import-clean'], verbose = False)
+	gpg = gnupg.GPG(gnupghome = _gpghome, options = [
+		'--with-colons',
+		'--keyid-format=LONG',
+		'--export-options=export-minimal,export-clean,no-export-attributes',
+		'--import-options=import-minimal,import-clean'
+		], verbose = False)
 
 	# Blindly try to import and check result. If we have count we are fine
 	import_result = gpg.import_keys(request.form['keytext'])
