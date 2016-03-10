@@ -7,7 +7,7 @@
 # Changelog: 2014.11.18 - first stable release
 #	2014.11.05 - Initial version
 
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, redirect
 import os
 
 app = Flask(__name__)
@@ -198,6 +198,15 @@ def add_key():
 @app.route('/about', methods=['GET'])
 def show_about_page():
 	return render_template('about.html')
+
+@app.route('/help', methods=['GET'])
+@app.route('/instructions', methods=['GET'])
+def show_instructions_page():
+    return render_template('instructions.html')
+
+@app.route('/all-keys', methods=['GET'])
+def get_all_keys():
+    return redirect("/pks/lookup?op=x-get-bundle", 302)
 
 if __name__ == '__main__':
 	app.run(debug=True)

@@ -59,14 +59,24 @@
 <body>
 	<div id="page">
 	<div id="header" class="header">
-		<h1><a href="/" style="color:white;">KSP :: HKP &gt; About</a></h1>
+		<h1><a href="/" style="color:white;">KSP :: HKP &gt; Help</a></h1>
 	</div>
 	<div id="navlinks">
 		<a href="http://www.ietf.org/rfc/rfc2324.txt">RFC-2324</a> | <a href="http://www.ietf.org/rfc/rfc7168.txt">RFC-7168</a> | <a href="/help">Help</a> | <a href="/about">About</a>
 	</div>
 	<div class="entry">
 		<h2>What is this</h2>
-		<div>This is a HKP compliant keyserver used for organizing keysigning parties. You can submit your keys and they will be bundled as needed.
+		<div>This is a HKP compliant keyserver used for organizing keysigning parties. You can submit your keys and they will be bundled as needed.</div>
+
+		<h2>How to use it</h2>
+		<div>Send your keys with a normal gpg
+			<pre>gpg --keyserver &lt;this address&gt; --send-keys 0xA16212118ACB4CC5</pre>
+		</div>
+		<div>Get keys with a normal gpg
+			<pre>gpg --keyserver &lt;this address&gt; --recv-keys 0xA16212118ACB4CC5</pre>
+		</div>
+		<div>Get all keys in the server
+			<pre>curl &lt;this server&gt;/all-keys</pre>
 		</div>
 	</div>
 	<div id="footer">
