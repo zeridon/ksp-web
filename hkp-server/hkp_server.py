@@ -196,9 +196,6 @@ def add_key():
 
 @app.route('/', methods=['GET'])
 @app.route('/about', methods=['GET'])
-def show_about_page():
-	return render_template('about.html')
-
 @app.route('/help', methods=['GET'])
 @app.route('/instructions', methods=['GET'])
 def show_instructions_page():
