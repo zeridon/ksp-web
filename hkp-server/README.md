@@ -26,7 +26,7 @@ How to run this software
 ```
 virtualenv --no-site-packages venv
 source ./venv/bin/activate
-pip install flask python-gnupg
+pip install -r requirements.txt
 
 # how hit the party
 ./hkp-server.py
@@ -44,6 +44,10 @@ How to use
 ```
  * Get all participating keys
 ```
- curl http://...:5000/pks/lookup?op=x-get-bundle -o keysigning-party-bindle.asc
+ curl http://...:5000/pks/lookup?op=x-get-bundle -o keysigning-party-bundle.asc
 ```
- and import it in a fresh keyring (not to polute yours).
+or
+```
+ curl http://...:5000/all-keys -o keysigning-party-bundle.asc
+```
+and import it in a fresh keyring (not to polute yours).
